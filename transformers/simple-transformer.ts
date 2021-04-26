@@ -23,13 +23,9 @@ function isComponentDecorator(node: ts.Decorator) {
 const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
     return sourceFile => {
         const visitor: ts.Visitor = (node: ts.Node): ts.Node => {
-            // if (ts.isDecorator(node)) {
-            //     //return undefined;
-            // }
-            // return ts.visitEachChild(node, (child) => visit(child), context);
-            console.log(node.getText());
             if (ts.isClassDeclaration(node)) {
                 if (node.decorators && node.decorators.length === 1 && isComponentDecorator(node.decorators[0])) {
+                    console.log(node.members[0]);
                     let types: Array<any> = Reflect.getMetadata("design:paramtypes", node) || [];
                     console.log({ types });
                 }
