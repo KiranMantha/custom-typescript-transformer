@@ -1,11 +1,7 @@
 {
     "compilerOptions": {
         "target": "ESNEXT",
-        "module": "ESNEXT",
-        "lib": [
-            "dom",
-            "es2015"
-        ],
+        "module": "commonjs",
         "plugins": [
             {
                 "transform": "./transformers/simple-transformer.ts",
