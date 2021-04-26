@@ -1,0 +1,25 @@
+{
+  "name": "custom-typescript-transformer",
+  "version": "1.0.0",
+  "description": "implementation of a simple custom typescript transformer",
+  "main": "index.js",
+  "scripts": {
+    "start": "rimraf dist && ttsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KiranMantha/custom-typescript-transformer.git"
+  },
+  "author": "KiranMantha",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KiranMantha/custom-typescript-transformer/issues"
+  },
+  "homepage": "https://github.com/KiranMantha/custom-typescript-transformer#readme",
+  "dependencies": {
+    "@abraham/reflection": "^0.7.0",
+    "rimraf": "^3.0.2",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.2.4"
+  }
+}

@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "ESNEXT",
+        "module": "ESNEXT",
+        "lib": [
+            "dom",
+            "es2015"
+        ],
+        "plugins": [
+            {
+                "transform": "./transformers/simple-transformer.ts",
+                "type": "raw",
+                "after": false
+            }
+        ],
+        "moduleResolution": "node",
+        "declaration": false,
+        "outDir": "dist",
+        "rootDir": "./",
+        "experimentalDecorators": true
+    },
+    "files": [
+        "index.ts"
+    ]
+}
