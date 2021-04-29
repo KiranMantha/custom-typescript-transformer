@@ -1,10 +1,22 @@
-const customElement = (selector: string) => (target: any) => {
+const Component = (selector: string) => (target: any) => {
     window.customElements.define(selector, target);
 }
 
-class Test { }
+const Service = (name?: string) => (target: any) => {
+    console.log(target)
+}
 
-@customElement('x-foo')
+@Service()
+class Sample { }
+
+@Service()
+class Test {
+    constructor(sample: Sample) {
+        console.log(sample);
+    }
+}
+
+@Component('text-foo')
 class FooElement {
     constructor(test: Test) {
         console.log(test);
