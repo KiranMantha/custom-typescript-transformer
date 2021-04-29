@@ -3,7 +3,7 @@ const Component = (selector: string) => (target: any) => {
 }
 
 const Service = (name?: string) => (target: any) => {
-    console.log(target)
+    console.log(name, target)
 }
 
 @Service()

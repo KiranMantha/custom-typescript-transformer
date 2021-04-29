@@ -2,7 +2,7 @@ const Component = (selector) => (target) => {
     window.customElements.define(selector, target);
 };
 const Service = (name) => (target) => {
-    console.log(target);
+    console.log(name, target);
 };
 class Sample {
 }
