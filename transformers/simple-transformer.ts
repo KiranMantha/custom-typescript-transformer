@@ -51,7 +51,7 @@ const getConstructorMethod = (node: ts.ClassDeclaration) => {
 const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
     return sourceFile => {
         const visitor: ts.Visitor = (node: ts.Node): ts.Node | ts.Node[] => {
-            if (ts.isDecorator(node) && containDecorators(['Component', 'Service'], node)) {
+            if (ts.isDecorator(node) && containDecorators(['Component', 'Service', 'Input'], node)) {
                 return undefined;
             }
             if (ts.isClassDeclaration(node)) {
@@ -99,6 +99,26 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
                         ))
                     }
                     return [ts.visitEachChild(node, visitor, context), decoratorStaticNode];
+                }
+            }
+            if (ts.isPropertyDeclaration(node)) {
+                if (node.decorators) {
+                    const inputDecorator = getDecoratorMetaData('Input', node);
+                    if (inputDecorator) {
+                        const decoratorStaticNode = factory.createGetAccessorDeclaration(
+                            undefined,
+                            [factory.createModifier(ts.SyntaxKind.StaticKeyword)],
+                            factory.createIdentifier('inputProp'),
+                            [],
+                            undefined,
+                            factory.createBlock(
+                                [factory.createReturnStatement(factory.createStringLiteral(node.name.getText()))],
+                                true
+                            )
+                        );
+
+                        return [decoratorStaticNode, ts.visitEachChild(node, visitor, context)];
+                    }
                 }
             }
             return ts.visitEachChild(node, visitor, context);
