@@ -16,7 +16,7 @@ function containDecorators(decorators: string[], node: ts.Decorator) {
     return false;
 }
 
-function getDecoratorMetaData(decoratorName: string, node: ts.Node): { name: string, fullText: string, params: any } {
+function getDecoratorMetaData(decoratorName: string, node: ts.Node): { name: string, params: string } {
     // You will probably want something more sophisticated
     // that analyzes the import declarations or possibly uses
     // the type checker in an initial pass of the source files
@@ -30,11 +30,10 @@ function getDecoratorMetaData(decoratorName: string, node: ts.Node): { name: str
             let params = null;
             if (ts.isCallExpression(decorator.expression)) {
                 const args = decorator.expression.arguments;
-                params = args.length && args[0].getText().replace(/'/g, '');
+                params = args.length && args[0].getText();
             }
             return {
                 name: decoratorName,
-                fullText: decorator.getFullText().trim(),
                 params
             }
         }
@@ -72,7 +71,7 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
                             factory.createCallExpression(
                                 factory.createIdentifier(componentDecorator.name),
                                 undefined,
-                                [factory.createStringLiteral(componentDecorator.params)]
+                                [factory.createIdentifier(componentDecorator.params)]
                             ),
                             undefined,
                             [factory.createArrayLiteralExpression(

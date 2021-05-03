@@ -18,4 +18,4 @@ class FooElement {
         console.log(test);
     }
 }
-Component("text-foo")(["Test", FooElement]);
+Component('text-foo')(["Test", FooElement]);
