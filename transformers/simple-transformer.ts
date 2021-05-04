@@ -2,43 +2,32 @@ import * as ts from 'typescript';
 
 const factory = ts.factory;
 
+const enum DecoratorTypes {
+    COMPONENT = 'Component',
+    INJECTABLE = 'Injectable',
+    INPUT = 'Input'
+}
+
 function containDecorators(decorators: string[], node: ts.Decorator) {
-    // You will probably want something more sophisticated
-    // that analyzes the import declarations or possibly uses
-    // the type checker in an initial pass of the source files
-    // before transforming. This naively just checks if the
-    // decorator is a call expression and if its expression
-    // has the text in decorators array. This definitely won't work
-    // in every scenario and might possibly get false positives.
     if (decorators.length) {
         return decorators.some(d => node.getFullText().trim().startsWith('@' + d))
     }
     return false;
 }
 
-function getDecoratorMetaData(decoratorName: string, node: ts.Node): { name: string, params: string } {
-    // You will probably want something more sophisticated
-    // that analyzes the import declarations or possibly uses
-    // the type checker in an initial pass of the source files
-    // before transforming. This naively just checks if the
-    // decorator is a call expression and if its expression
-    // has the text "Component". This definitely won't work
-    // in every scenario and might possibly get false positives.
-    if (node.decorators) {
-        const [decorator] = node.decorators.filter(d => d.getFullText().trim().startsWith('@' + decoratorName));
-        if (decorator) {
-            let params = null;
-            if (ts.isCallExpression(decorator.expression)) {
-                const args = decorator.expression.arguments;
-                params = args.length && args[0].getText();
-            }
-            return {
-                name: decoratorName,
-                params
-            }
+function getDecoratorMetaData(decoratorName: string, node: ts.Node): { name: string; params: string } {
+    const [decorator] = node.decorators.filter(d => d.getFullText().trim().startsWith('@' + decoratorName));
+    if (decorator) {
+        let params = null;
+        if (ts.isCallExpression(decorator.expression)) {
+            const args = decorator.expression.arguments;
+            params = args.length && args[0].getText();
+        }
+        return {
+            name: decoratorName,
+            params
         }
     }
-    return null;
 }
 
 const getConstructorMethod = (node: ts.ClassDeclaration) => {
@@ -48,17 +37,17 @@ const getConstructorMethod = (node: ts.ClassDeclaration) => {
     return constructorMethod.length && constructorMethod[0];
 }
 
-const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
+const astTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.TransformationContext) => {
     return sourceFile => {
         const visitor: ts.Visitor = (node: ts.Node): ts.Node | ts.Node[] => {
-            if (ts.isDecorator(node) && containDecorators(['Component', 'Service', 'Input'], node)) {
+            if (ts.isDecorator(node) && containDecorators([DecoratorTypes.COMPONENT, DecoratorTypes.INJECTABLE, DecoratorTypes.INPUT], node)) {
                 return undefined;
             }
             if (ts.isClassDeclaration(node)) {
                 if (node.decorators) {
                     const constructor = getConstructorMethod(node);
-                    const componentDecorator = getDecoratorMetaData('Component', node);
-                    const serviceDecorator = getDecoratorMetaData('Service', node);
+                    const componentDecorator = getDecoratorMetaData(DecoratorTypes.COMPONENT, node);
+                    const injectableDecorator = getDecoratorMetaData(DecoratorTypes.INJECTABLE, node);
                     const nodeName = node.name.escapedText as string;
                     let constructorParametersTypes = [];
                     let decoratorStaticNode = undefined;
@@ -82,10 +71,10 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
                                 false
                             )]
                         ));
-                    } else if (serviceDecorator) {
+                    } else if (injectableDecorator) {
                         decoratorStaticNode = factory.createExpressionStatement(factory.createCallExpression(
                             factory.createCallExpression(
-                                factory.createIdentifier(serviceDecorator.name),
+                                factory.createIdentifier(injectableDecorator.name),
                                 undefined,
                                 [factory.createStringLiteral(nodeName)]
                             ),
@@ -96,14 +85,15 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
                             ],
                                 false
                             )]
-                        ))
+                        ));
                     }
-                    return [ts.visitEachChild(node, visitor, context), decoratorStaticNode];
+                    const classNode = factory.updateClassDeclaration(node, undefined, node.modifiers, node.name, node.typeParameters, node.heritageClauses, node.members);
+                    return [ts.visitEachChild(classNode, visitor, context), decoratorStaticNode];
                 }
             }
             if (ts.isPropertyDeclaration(node)) {
                 if (node.decorators) {
-                    const inputDecorator = getDecoratorMetaData('Input', node);
+                    const inputDecorator = getDecoratorMetaData(DecoratorTypes.INPUT, node);
                     if (inputDecorator) {
                         const decoratorStaticNode = factory.createGetAccessorDeclaration(
                             undefined,
@@ -116,7 +106,6 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
                                 true
                             )
                         );
-
                         return [decoratorStaticNode, ts.visitEachChild(node, visitor, context)];
                     }
                 }
@@ -127,4 +116,4 @@ const simpleTransformer: ts.TransformerFactory<ts.SourceFile> = (context: ts.Tra
     };
 }
 
-export default simpleTransformer;
+export default astTransformer;

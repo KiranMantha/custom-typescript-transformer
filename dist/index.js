@@ -1,7 +1,7 @@
 const Component = (selector) => (target) => {
     window.customElements.define(selector, target);
 };
-const Service = (name) => (target) => {
+const Injectable = (name) => (target) => {
     console.log(name, target);
 };
 const Input = (target, key) => {
@@ -9,20 +9,22 @@ const Input = (target, key) => {
 };
 class Sample {
 }
-Service("Sample")([Sample]);
+Injectable("Sample")([Sample]);
 class Test {
     constructor(sample) {
         console.log(sample);
     }
 }
-Service("Test")(["Sample", Test]);
-class FooElement {
-    constructor(test) {
-        this.foo = 'hey foo';
-        console.log(test);
+Injectable("Test")(["Sample", Test]);
+const footest = () => {
+    class FooElement {
+        constructor(test) {
+            this.foo = 'hey foo';
+            console.log(test);
+        }
+        static get inputProp() {
+            return "foo";
+        }
     }
-    static get inputProp() {
-        return "foo";
-    }
-}
-Component('text-foo')(["Test", FooElement]);
+    Component('text-foo')(["Test", FooElement]);
+};
